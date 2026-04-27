@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head><title>Survey</title></head>
+<body>
+    <h2 id="qText">How do you like this survey?</h2>
+    <input type="text" id="ans"><button onclick="send()">Submit</button>
+
+    <script>
+        let start = Date.now();
+        async function send() {
+            let timeTaken = (Date.now() - start) / 1000;
+            await fetch('YOUR_BACKEND_RENDER_URL/submit', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    question: document.getElementById('qText').innerText,
+                    answer: document.getElementById('ans').value,
+                    duration: timeTaken
+                })
+            });
+            alert("Sent in " + timeTaken + "s");
+        }
+    </script>
+</body>
+</html>

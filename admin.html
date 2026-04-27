@@ -2,46 +2,55 @@
 <html>
 <head>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-50 p-8 font-[Inter]">
-    <div class="max-w-5xl mx-auto">
-        <h1 class="text-3xl font-bold mb-10">Admin Control</h1>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-            <div class="bg-white p-6 rounded-3xl border">
-                <h2 class="text-sm font-bold text-gray-400 mb-4 uppercase">Add New Question</h2>
-                <input id="qText" type="text" placeholder="Question text..." class="w-full p-3 bg-gray-50 rounded-xl mb-3 border">
-                <select id="qCat" class="w-full p-3 bg-gray-50 rounded-xl mb-4 border">
-                    <option value="survey">Survey</option>
-                    <option value="demographic">Demographic</option>
-                </select>
-                <button onclick="addQ()" class="w-full bg-black text-white p-3 rounded-xl">Add to Survey</button>
-            </div>
-            <div class="bg-white p-6 rounded-3xl border">
-                <canvas id="chart"></canvas>
+<body class="bg-gray-100 p-6 font-[Inter]">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">Survey Administration</h1>
+            <div class="bg-white px-4 py-2 rounded-lg shadow-sm text-sm border font-medium">
+                Total Respondents: <span id="resp-count" class="text-purple-600">0</span>
             </div>
         </div>
 
-        <div class="bg-white rounded-3xl border overflow-hidden">
+        <div class="bg-white p-6 rounded-xl shadow-sm mb-8 border border-gray-200">
+            <h2 class="text-sm font-bold text-gray-400 uppercase mb-4">Add Form Field</h2>
+            <div class="flex flex-wrap gap-4">
+                <input id="qText" type="text" placeholder="Question text (e.g. Year Level)" class="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-purple-200 outline-none">
+                <select id="qCat" class="p-3 border rounded-lg bg-gray-50">
+                    <option value="demographic">Demographic (Top)</option>
+                    <option value="survey">Survey Question</option>
+                </select>
+                <button onclick="addQ()" class="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition">Add Question</button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <table class="w-full text-left">
-                <thead class="bg-gray-50 text-xs text-gray-400 uppercase">
-                    <tr><th class="p-4">Answer</th><th class="p-4">Duration</th></tr>
+                <thead class="bg-gray-50 border-b">
+                    <tr>
+                        <th class="p-4 text-xs font-bold text-gray-400 uppercase">Respondent ID</th>
+                        <th class="p-4 text-xs font-bold text-gray-400 uppercase">Question</th>
+                        <th class="p-4 text-xs font-bold text-gray-400 uppercase">Answer</th>
+                        <th class="p-4 text-xs font-bold text-gray-400 uppercase">Speed (Sec)</th>
+                    </tr>
                 </thead>
-                <tbody id="rows"></tbody>
+                <tbody id="rows" class="divide-y divide-gray-100">
+                    </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        const API = "https://your-backend.onrender.com/api"; // UPDATE THIS
+        const API = "https://your-backend.onrender.com/api";
+
         async function addQ() {
             const text = document.getElementById('qText').value;
             const category = document.getElementById('qCat').value;
             await fetch(`${API}/admin/questions`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ text, category, is_required: true })
+                body: JSON.stringify({ text, category, is_required: false })
             });
             location.reload();
         }
@@ -49,20 +58,23 @@
         async function load() {
             const res = await fetch(`${API}/admin/results`);
             const data = await res.json();
+            
             const rows = document.getElementById('rows');
-            data.forEach(d => {
-                rows.innerHTML += `<tr class="border-t">
-                    <td class="p-4">${d.answer}</td>
-                    <td class="p-4 font-mono font-bold">${d.duration_seconds}s</td>
-                </tr>`;
-            });
+            const uniqueIds = new Set(data.map(d => d.respondent_id));
+            document.getElementById('resp-count').innerText = uniqueIds.size;
 
-            new Chart(document.getElementById('chart'), {
-                type: 'bar',
-                data: {
-                    labels: data.slice(0,10).map((_,i) => i+1),
-                    datasets: [{ label: 'Seconds', data: data.map(d => d.duration_seconds), backgroundColor: '#000' }]
-                }
+            data.forEach(d => {
+                rows.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="p-4 font-mono text-[10px] text-gray-500">${d.respondent_id}</td>
+                        <td class="p-4 text-sm text-gray-700">${d.question_text}</td>
+                        <td class="p-4 text-sm font-medium text-gray-900">${d.answer}</td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 rounded text-xs font-bold ${d.duration_seconds > 10 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">
+                                ${d.duration_seconds}s
+                            </span>
+                        </td>
+                    </tr>`;
             });
         }
         load();

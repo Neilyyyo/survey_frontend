@@ -2,22 +2,31 @@
 <html lang="en">
 <head>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; }</style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0ebf8; }
+        .form-card { border-top: 10px solid #673ab7; } /* Google Forms Purple */
+    </style>
 </head>
-<body class="bg-gray-50 flex items-center justify-center min-h-screen">
-    <div id="survey-box" class="bg-white p-10 rounded-[32px] shadow-sm border border-gray-100 max-w-md w-full mx-4">
-        <div class="h-1.5 w-full bg-gray-100 rounded-full mb-8 overflow-hidden">
-            <div id="bar" class="h-full bg-black transition-all duration-500" style="width: 0%"></div>
+<body class="py-10 px-4">
+    <div class="max-w-2xl mx-auto space-y-4">
+        <div class="bg-white rounded-lg shadow-sm p-8 form-card">
+            <h1 class="text-3xl font-bold mb-2">Online Survey</h1>
+            <p class="text-sm text-gray-600">Please fill out this form. All questions are anonymous.</p>
+            <div class="mt-4 border-t pt-4 text-xs text-red-500">* Required</div>
         </div>
-        <p id="cat" class="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-2"></p>
-        <h1 id="q-text" class="text-2xl font-semibold text-gray-900 mb-8 leading-tight">Loading...</h1>
-        <input type="text" id="ans" placeholder="Your answer..." class="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black mb-6">
-        <button onclick="handleNext()" class="w-full bg-black text-white p-4 rounded-2xl font-semibold hover:bg-gray-800 transition">Continue</button>
+
+        <div id="question-container">
+            </div>
+
+        <div class="flex justify-between items-center">
+            <button id="next-btn" onclick="handleNext()" class="bg-[#673ab7] text-white px-6 py-2 rounded shadow hover:bg-[#5e35a6] transition font-medium">Next</button>
+        </div>
     </div>
 
     <script>
-        const API = "https://your-backend.onrender.com/api"; // UPDATE THIS
+        const API = "https://your-backend.onrender.com/api"; 
+        const respondentId = 'user_' + Math.random().toString(36).substr(2, 9);
         let questions = [], index = 0, startTime;
 
         async function start() {
@@ -29,27 +38,49 @@
         function render() {
             if (index < questions.length) {
                 const q = questions[index];
-                document.getElementById('q-text').innerText = q.text;
-                document.getElementById('cat').innerText = q.category;
-                document.getElementById('ans').value = "";
-                document.getElementById('bar').style.width = `${(index / questions.length) * 100}%`;
+                const container = document.getElementById('question-container');
+                
+                container.innerHTML = `
+                    <div class="bg-white rounded-lg shadow-sm p-8 border border-gray-200 animate-fadeIn">
+                        <div class="mb-6 text-sm font-medium">Question ${index + 1} of ${questions.length}</div>
+                        <label class="block text-lg mb-6">${q.text} ${q.is_required ? '<span class="text-red-500">*</span>' : ''}</label>
+                        <input type="text" id="ans" placeholder="Your answer" 
+                               class="w-full border-b border-gray-300 focus:border-[#673ab7] focus:outline-none py-2 text-lg transition-colors">
+                    </div>
+                `;
                 startTime = Date.now();
             } else {
-                document.getElementById('survey-box').innerHTML = `<h1 class="text-center text-xl font-bold">Survey Completed.</h1>`;
+                showSuccess();
             }
         }
 
         async function handleNext() {
-            const time = (Date.now() - startTime) / 1000;
+            const duration = (Date.now() - startTime) / 1000;
             const answer = document.getElementById('ans').value || "N/A";
+            
             await fetch(`${API}/submit`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ question: questions[index].text, answer, duration: time })
+                body: JSON.stringify({ 
+                    respondent_id: respondentId,
+                    question: questions[index].text, 
+                    answer, 
+                    duration 
+                })
             });
+
             index++;
             render();
         }
+
+        function showSuccess() {
+            document.querySelector('.max-w-2xl').innerHTML = `
+                <div class="bg-white rounded-lg shadow-sm p-8 form-card text-center">
+                    <h1 class="text-2xl mb-4">Your response has been recorded.</h1>
+                    <a href="index.html" class="text-blue-600 underline text-sm">Submit another response</a>
+                </div>`;
+        }
+
         start();
     </script>
 </body>

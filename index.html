@@ -9,7 +9,7 @@
         let start = Date.now();
         async function send() {
             let timeTaken = (Date.now() - start) / 1000;
-            await fetch('YOUR_BACKEND_RENDER_URL/submit', {
+            await fetch('https://survey-backend-0vo1.onrender.com/submit', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({

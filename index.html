@@ -2,122 +2,231 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f0ebf8; }
-        .form-header { border-top: 10px solid #673ab7; }
-        .question-card:focus-within { border-left: 5px solid #673ab7; border-left-width: 6px; }
+        * { font-family: 'Inter', sans-serif; }
+        body { background: linear-gradient(135deg, #f5f5f5 0%, #fafafa 100%); }
+        .input-field { background: transparent; border: none; border-bottom: 2px solid #e5e7eb; transition: all 0.3s ease; }
+        .input-field:focus { border-bottom-color: #3b82f6; outline: none; background: rgba(59, 130, 246, 0.02); }
+        .form-header { border-left: 4px solid #3b82f6; }
+        .submit-btn { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); transition: all 0.3s ease; }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3); }
+        .progress-bar { height: 3px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%); transition: width 0.3s ease; }
+        .loader { border: 3px solid #e5e7eb; border-top: 3px solid #3b82f6; border-radius: 50%; width: 30px; height: 30px; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
-    <title>Student Survey Form</title>
+    <title>Survey Form</title>
 </head>
-<body class="py-10 px-4">
-    <div class="max-w-3xl mx-auto space-y-4">
-        <div class="bg-white rounded-lg shadow-sm p-8 form-header">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">General Student Survey</h1>
-            <p class="text-sm text-gray-600 mb-4">Please answer the following questions. Demographic info is optional.</p>
-            <span class="text-red-500 text-xs">* Indicates required</span>
+<body class="min-h-screen py-8 px-4">
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-xl shadow-sm p-8 form-header mb-6">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">Survey</h1>
+            <p class="text-gray-500 text-sm mb-2">Help us improve by sharing your feedback</p>
+            <div class="progress-bar mt-4">
+                <div class="progress-fill" style="width: 0%"></div>
+            </div>
         </div>
 
-        <form id="survey-form" class="space-y-4">
-            <div class="bg-white rounded-lg shadow-sm p-8 border border-gray-200 question-card">
-                <label class="block text-base font-medium mb-4">Full Name <span class="text-gray-400 font-normal">(Optional)</span></label>
-                <input type="text" id="demo-name" onfocus="startTimer('Name')" placeholder="Your answer" class="w-full border-b border-gray-300 focus:border-[#673ab7] focus:outline-none py-2 transition-all">
+        <form id="survey-form" class="space-y-5">
+            <!-- Demographics Section -->
+            <div class="space-y-4 mb-8">
+                <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Optional Information</div>
+                
+                <div class="bg-white rounded-lg p-6 border border-gray-100 hover:border-gray-200 transition">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Full Name</label>
+                    <input type="text" id="demo-name" placeholder="Enter your name" class="input-field w-full px-0 py-2 text-gray-900">
+                </div>
+
+                <div class="bg-white rounded-lg p-6 border border-gray-100 hover:border-gray-200 transition">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Age</label>
+                    <input type="number" id="demo-age" placeholder="Enter your age" class="input-field w-full px-0 py-2 text-gray-900">
+                </div>
+
+                <div class="bg-white rounded-lg p-6 border border-gray-100 hover:border-gray-200 transition">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Gender</label>
+                    <input type="text" id="demo-gender" placeholder="Enter your gender" class="input-field w-full px-0 py-2 text-gray-900">
+                </div>
+
+                <div class="bg-white rounded-lg p-6 border border-gray-100 hover:border-gray-200 transition">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Year Level & Section</label>
+                    <input type="text" id="demo-section" placeholder="e.g. 3rd Year - A" class="input-field w-full px-0 py-2 text-gray-900">
+                </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow-sm p-8 border border-gray-200 question-card">
-                <label class="block text-base font-medium mb-4">Age <span class="text-gray-400 font-normal">(Optional)</span></label>
-                <input type="number" id="demo-age" onfocus="startTimer('Age')" placeholder="Your answer" class="w-full border-b border-gray-300 focus:border-[#673ab7] focus:outline-none py-2 transition-all">
-            </div>
-
-            <div class="bg-white rounded-lg shadow-sm p-8 border border-gray-200 question-card">
-                <label class="block text-base font-medium mb-4">Gender <span class="text-gray-400 font-normal">(Optional)</span></label>
-                <input type="text" id="demo-gender" onfocus="startTimer('Gender')" placeholder="Your answer" class="w-full border-b border-gray-300 focus:border-[#673ab7] focus:outline-none py-2 transition-all">
-            </div>
-
-            <div class="bg-white rounded-lg shadow-sm p-8 border border-gray-200 question-card">
-                <label class="block text-base font-medium mb-4">Year Level & Section <span class="text-gray-400 font-normal">(Optional)</span></label>
-                <input type="text" id="demo-section" onfocus="startTimer('Section')" placeholder="Your answer" class="w-full border-b border-gray-300 focus:border-[#673ab7] focus:outline-none py-2 transition-all">
-            </div>
-
+            <!-- Questions Section -->
             <div id="dynamic-questions" class="space-y-4"></div>
 
-            <div class="py-6">
-                <button type="submit" class="bg-[#673ab7] text-white px-10 py-2.5 rounded-md shadow hover:bg-[#5e35a6] font-medium transition">Submit</button>
+            <!-- Submit Button -->
+            <div class="py-6 flex gap-3">
+                <button type="submit" class="submit-btn text-white px-8 py-3 rounded-lg font-medium shadow-sm flex-1 hover:shadow-md">
+                    Submit Response
+                </button>
             </div>
         </form>
     </div>
+    </div>
 
     <script>
-        const API = "https://your-backend.onrender.com/api"; 
-        const respondentId = 'resp_' + Math.random().toString(36).substr(2, 9);
+        // API Configuration - Change this to your backend URL
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000/api'
+            : 'https://your-backend.onrender.com/api';
+        
+        const respondentId = 'resp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         let dynamicData = [];
         let timers = {};
+        let totalQuestions = 0;
+        let answeredQuestions = 0;
 
         function startTimer(key) {
             if (!timers[key]) timers[key] = Date.now();
         }
 
-        async function init() {
-            const res = await fetch(`${API}/questions`);
-            dynamicData = await res.json();
-            const list = document.getElementById('dynamic-questions');
+        function updateProgress() {
+            const percentage = totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0;
+            const progressFill = document.querySelector('.progress-fill');
+            if (progressFill) progressFill.style.width = percentage + '%';
+        }
 
-            dynamicData.filter(q => q.category !== 'demographic').forEach((q, i) => {
-                const div = document.createElement('div');
-                div.className = "bg-white rounded-lg shadow-sm p-8 border border-gray-200 question-card";
-                div.innerHTML = `
-                    <label class="block text-base font-medium mb-4">${q.text} ${q.is_required ? '<span class="text-red-500">*</span>' : ''}</label>
-                    <input type="text" id="q-${i}" onfocus="startTimer('q-${i}')" placeholder="Your answer" class="w-full border-b border-gray-300 focus:border-[#673ab7] focus:outline-none py-2 transition-all">
+        function onInputChange() {
+            const inputs = document.querySelectorAll('.input-field');
+            answeredQuestions = Array.from(inputs).filter(i => i.value.trim()).length;
+            updateProgress();
+        }
+
+        async function init() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/questions`);
+                if (!res.ok) throw new Error(`API error: ${res.status}`);
+                
+                dynamicData = await res.json();
+                const questionCount = dynamicData.filter(q => q.category !== 'demographic').length;
+                totalQuestions = 4 + questionCount; // 4 demographics + dynamic questions
+                
+                const list = document.getElementById('dynamic-questions');
+                
+                if (questionCount > 0) {
+                    const header = document.createElement('div');
+                    header.className = "text-xs font-semibold text-gray-400 uppercase tracking-wide mt-8 mb-4";
+                    header.textContent = "Survey Questions";
+                    list.appendChild(header);
+                }
+
+                dynamicData.filter(q => q.category !== 'demographic').forEach((q, i) => {
+                    const div = document.createElement('div');
+                    div.className = "bg-white rounded-lg p-6 border border-gray-100 hover:border-gray-200 transition";
+                    div.innerHTML = `
+                        <label class="block text-sm font-medium text-gray-700 mb-3">
+                            ${q.text}
+                            ${q.is_required ? '<span class="text-red-500">*</span>' : ''}
+                        </label>
+                        <input 
+                            type="text" 
+                            id="q-${i}" 
+                            placeholder="Your answer" 
+                            class="input-field w-full px-0 py-2 text-gray-900"
+                            ${q.is_required ? 'required' : ''}
+                        >
+                    `;
+                    list.appendChild(div);
+                });
+
+                // Attach change listeners
+                document.querySelectorAll('.input-field').forEach(input => {
+                    input.addEventListener('change', onInputChange);
+                    input.addEventListener('input', onInputChange);
+                    input.addEventListener('focus', (e) => startTimer(e.target.id));
+                });
+
+                updateProgress();
+            } catch (err) {
+                console.error('Failed to load survey:', err);
+                document.getElementById('survey-form').innerHTML = `
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+                        <p class="text-red-800 font-medium">Failed to load survey</p>
+                        <p class="text-red-600 text-sm mt-2">Make sure the backend server is running at ${API_BASE_URL}</p>
+                    </div>
                 `;
-                list.appendChild(div);
-            });
+            }
         }
 
         document.getElementById('survey-form').onsubmit = async (e) => {
             e.preventDefault();
             
-            const allSubmissions = [];
+            const button = e.target.querySelector('button[type="submit"]');
+            button.disabled = true;
+            button.innerHTML = '<div class="loader mx-auto"></div>';
+            
+            try {
+                const allSubmissions = [];
 
-            // 1. Collect Demographics
-            const demos = [
-                { q: "Name", val: document.getElementById('demo-name').value },
-                { q: "Age", val: document.getElementById('demo-age').value },
-                { q: "Gender", val: document.getElementById('demo-gender').value },
-                { q: "Section", val: document.getElementById('demo-section').value }
-            ];
+                // 1. Collect Demographics
+                const demos = [
+                    { q: "Name", val: document.getElementById('demo-name').value, id: 'demo-name' },
+                    { q: "Age", val: document.getElementById('demo-age').value, id: 'demo-age' },
+                    { q: "Gender", val: document.getElementById('demo-gender').value, id: 'demo-gender' },
+                    { q: "Section", val: document.getElementById('demo-section').value, id: 'demo-section' }
+                ];
 
-            demos.forEach(d => {
-                allSubmissions.push({
-                    respondent_id: respondentId,
-                    question: d.q,
-                    answer: d.val || "N/A",
-                    duration: timers[d.q] ? (Date.now() - timers[d.q]) / 1000 : 0
+                demos.forEach(d => {
+                    allSubmissions.push({
+                        respondent_id: respondentId,
+                        question: d.q,
+                        answer: d.val || "N/A",
+                        duration: timers[d.id] ? (Date.now() - timers[d.id]) / 1000 : 0
+                    });
                 });
-            });
 
-            // 2. Collect Dynamic Questions
-            dynamicData.filter(q => q.category !== 'demographic').forEach((q, i) => {
-                const val = document.getElementById(`q-${i}`).value;
-                allSubmissions.push({
-                    respondent_id: respondentId,
-                    question: q.text,
-                    answer: val || "N/A",
-                    duration: timers[`q-${i}`] ? (Date.now() - timers[`q-${i}`]) / 1000 : 0
+                // 2. Collect Dynamic Questions
+                dynamicData.filter(q => q.category !== 'demographic').forEach((q, i) => {
+                    const val = document.getElementById(`q-${i}`).value;
+                    if (q.is_required && !val) {
+                        throw new Error(`"${q.text}" is required`);
+                    }
+                    allSubmissions.push({
+                        respondent_id: respondentId,
+                        question: q.text,
+                        answer: val || "N/A",
+                        duration: timers[`q-${i}`] ? (Date.now() - timers[`q-${i}`]) / 1000 : 0
+                    });
                 });
-            });
 
-            // Send all to DB
-            for (const sub of allSubmissions) {
-                await fetch(`${API}/submit`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(sub)
-                });
+                // 3. Send all responses to backend
+                for (const sub of allSubmissions) {
+                    const response = await fetch(`${API_BASE_URL}/submit`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(sub)
+                    });
+                    if (!response.ok) throw new Error(`Submit failed: ${response.status}`);
+                }
+
+                // Success message
+                document.body.innerHTML = `
+                    <div class="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center p-4">
+                        <div class="bg-white rounded-xl shadow-lg p-12 max-w-md text-center">
+                            <div class="text-5xl mb-4">✓</div>
+                            <h1 class="text-3xl font-bold text-gray-900 mb-2">Thank you!</h1>
+                            <p class="text-gray-600 mb-6">Your response has been saved successfully.</p>
+                            <p class="text-sm text-gray-500 font-mono">Respondent ID: ${respondentId}</p>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                console.error('Submit error:', err);
+                button.disabled = false;
+                button.textContent = 'Submit Response';
+                alert(`Error: ${err.message}`);
             }
-
-            document.body.innerHTML = `<div class="flex items-center justify-center min-h-screen text-2xl font-bold">Thank you! Your response is saved.</div>`;
         };
+
+        init();
+    </script>
+</body>
+</html>
 
         init();
     </script>

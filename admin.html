@@ -1,83 +1,23 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-</head>
-<body class="bg-gray-100 p-6 font-[Inter]">
-    <div class="max-w-6xl mx-auto">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-2xl font-bold text-gray-800">Survey Administration</h1>
-            <div class="bg-white px-4 py-2 rounded-lg shadow-sm text-sm border font-medium">
-                Total Respondents: <span id="resp-count" class="text-purple-600">0</span>
-            </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-xl shadow-sm mb-8 border border-gray-200">
-            <h2 class="text-sm font-bold text-gray-400 uppercase mb-4">Add Form Field</h2>
-            <div class="flex flex-wrap gap-4">
-                <input id="qText" type="text" placeholder="Question text (e.g. Year Level)" class="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-purple-200 outline-none">
-                <select id="qCat" class="p-3 border rounded-lg bg-gray-50">
-                    <option value="demographic">Demographic (Top)</option>
-                    <option value="survey">Survey Question</option>
-                </select>
-                <button onclick="addQ()" class="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition">Add Question</button>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <table class="w-full text-left">
-                <thead class="bg-gray-50 border-b">
-                    <tr>
-                        <th class="p-4 text-xs font-bold text-gray-400 uppercase">Respondent ID</th>
-                        <th class="p-4 text-xs font-bold text-gray-400 uppercase">Question</th>
-                        <th class="p-4 text-xs font-bold text-gray-400 uppercase">Answer</th>
-                        <th class="p-4 text-xs font-bold text-gray-400 uppercase">Speed (Sec)</th>
-                    </tr>
-                </thead>
-                <tbody id="rows" class="divide-y divide-gray-100">
-                    </tbody>
-            </table>
-        </div>
-    </div>
-
+<tbody id="rows" class="divide-y divide-gray-100">
     <script>
-        const API = "https://your-backend.onrender.com/api";
-
-        async function addQ() {
-            const text = document.getElementById('qText').value;
-            const category = document.getElementById('qCat').value;
-            await fetch(`${API}/admin/questions`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ text, category, is_required: false })
-            });
-            location.reload();
-        }
-
         async function load() {
             const res = await fetch(`${API}/admin/results`);
-            const data = await res.json();
+            let data = await res.json();
             
-            const rows = document.getElementById('rows');
-            const uniqueIds = new Set(data.map(d => d.respondent_id));
-            document.getElementById('resp-count').innerText = uniqueIds.size;
+            // Sort by Respondent ID first, then by Time Created
+            data.sort((a, b) => a.respondent_id.localeCompare(b.respondent_id));
 
+            const tbody = document.getElementById('rows');
             data.forEach(d => {
-                rows.innerHTML += `
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="p-4 font-mono text-[10px] text-gray-500">${d.respondent_id}</td>
-                        <td class="p-4 text-sm text-gray-700">${d.question_text}</td>
-                        <td class="p-4 text-sm font-medium text-gray-900">${d.answer}</td>
-                        <td class="p-4">
-                            <span class="px-2 py-1 rounded text-xs font-bold ${d.duration_seconds > 10 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">
-                                ${d.duration_seconds}s
-                            </span>
-                        </td>
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 border-b border-gray-100">
+                        <td class="p-4 font-mono text-[10px] text-purple-600 font-bold">${d.respondent_id}</td>
+                        <td class="p-4 text-sm font-medium text-gray-800">${d.question_text}</td>
+                        <td class="p-4 text-sm text-gray-600">${d.answer}</td>
+                        <td class="p-4 text-sm font-bold text-gray-900">${d.duration_seconds.toFixed(2)}s</td>
                     </tr>`;
             });
         }
         load();
     </script>
-</body>
-</html>
+</tbody>

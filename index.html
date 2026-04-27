@@ -1,87 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f0ebf8; }
-        .form-card { border-top: 10px solid #673ab7; } /* Google Forms Purple */
+        .form-header { border-top: 10px solid #673ab7; }
+        .question-card:focus-within { border-left: 5px solid #673ab7; border-left-width: 6px; }
     </style>
+    <title>Student Survey Form</title>
 </head>
 <body class="py-10 px-4">
-    <div class="max-w-2xl mx-auto space-y-4">
-        <div class="bg-white rounded-lg shadow-sm p-8 form-card">
-            <h1 class="text-3xl font-bold mb-2">Online Survey</h1>
-            <p class="text-sm text-gray-600">Please fill out this form. All questions are anonymous.</p>
-            <div class="mt-4 border-t pt-4 text-xs text-red-500">* Required</div>
+    <div class="max-w-3xl mx-auto space-y-4">
+        <div class="bg-white rounded-lg shadow-sm p-8 form-header">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">General Student Survey</h1>
+            <p class="text-sm text-gray-600 mb-4">Please answer the following questions. Demographic info is optional.</p>
+            <span class="text-red-500 text-xs">* Indicates required</span>
         </div>
 
-        <div id="question-container">
+        <form id="survey-form" class="space-y-4">
+            <div class="bg-white rounded-lg shadow-sm p-8 border border-gray-200 question-card">
+                <label class="block text-base font-medium mb-4">Full Name <span class="text-gray-400 font-normal">(Optional)</span></label>
+                <input type="text" id="demo-name" onfocus="startTimer('Name')" placeholder="Your answer" class="w-full border-b border-gray-300 focus:border-[#673ab7] focus:outline-none py-2 transition-all">
             </div>
 
-        <div class="flex justify-between items-center">
-            <button id="next-btn" onclick="handleNext()" class="bg-[#673ab7] text-white px-6 py-2 rounded shadow hover:bg-[#5e35a6] transition font-medium">Next</button>
-        </div>
+            <div class="bg-white rounded-lg shadow-sm p-8 border border-gray-200 question-card">
+                <label class="block text-base font-medium mb-4">Age <span class="text-gray-400 font-normal">(Optional)</span></label>
+                <input type="number" id="demo-age" onfocus="startTimer('Age')" placeholder="Your answer" class="w-full border-b border-gray-300 focus:border-[#673ab7] focus:outline-none py-2 transition-all">
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-8 border border-gray-200 question-card">
+                <label class="block text-base font-medium mb-4">Gender <span class="text-gray-400 font-normal">(Optional)</span></label>
+                <input type="text" id="demo-gender" onfocus="startTimer('Gender')" placeholder="Your answer" class="w-full border-b border-gray-300 focus:border-[#673ab7] focus:outline-none py-2 transition-all">
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-8 border border-gray-200 question-card">
+                <label class="block text-base font-medium mb-4">Year Level & Section <span class="text-gray-400 font-normal">(Optional)</span></label>
+                <input type="text" id="demo-section" onfocus="startTimer('Section')" placeholder="Your answer" class="w-full border-b border-gray-300 focus:border-[#673ab7] focus:outline-none py-2 transition-all">
+            </div>
+
+            <div id="dynamic-questions" class="space-y-4"></div>
+
+            <div class="py-6">
+                <button type="submit" class="bg-[#673ab7] text-white px-10 py-2.5 rounded-md shadow hover:bg-[#5e35a6] font-medium transition">Submit</button>
+            </div>
+        </form>
     </div>
 
     <script>
         const API = "https://your-backend.onrender.com/api"; 
-        const respondentId = 'user_' + Math.random().toString(36).substr(2, 9);
-        let questions = [], index = 0, startTime;
+        const respondentId = 'resp_' + Math.random().toString(36).substr(2, 9);
+        let dynamicData = [];
+        let timers = {};
 
-        async function start() {
+        function startTimer(key) {
+            if (!timers[key]) timers[key] = Date.now();
+        }
+
+        async function init() {
             const res = await fetch(`${API}/questions`);
-            questions = await res.json();
-            render();
-        }
+            dynamicData = await res.json();
+            const list = document.getElementById('dynamic-questions');
 
-        function render() {
-            if (index < questions.length) {
-                const q = questions[index];
-                const container = document.getElementById('question-container');
-                
-                container.innerHTML = `
-                    <div class="bg-white rounded-lg shadow-sm p-8 border border-gray-200 animate-fadeIn">
-                        <div class="mb-6 text-sm font-medium">Question ${index + 1} of ${questions.length}</div>
-                        <label class="block text-lg mb-6">${q.text} ${q.is_required ? '<span class="text-red-500">*</span>' : ''}</label>
-                        <input type="text" id="ans" placeholder="Your answer" 
-                               class="w-full border-b border-gray-300 focus:border-[#673ab7] focus:outline-none py-2 text-lg transition-colors">
-                    </div>
+            dynamicData.filter(q => q.category !== 'demographic').forEach((q, i) => {
+                const div = document.createElement('div');
+                div.className = "bg-white rounded-lg shadow-sm p-8 border border-gray-200 question-card";
+                div.innerHTML = `
+                    <label class="block text-base font-medium mb-4">${q.text} ${q.is_required ? '<span class="text-red-500">*</span>' : ''}</label>
+                    <input type="text" id="q-${i}" onfocus="startTimer('q-${i}')" placeholder="Your answer" class="w-full border-b border-gray-300 focus:border-[#673ab7] focus:outline-none py-2 transition-all">
                 `;
-                startTime = Date.now();
-            } else {
-                showSuccess();
-            }
+                list.appendChild(div);
+            });
         }
 
-        async function handleNext() {
-            const duration = (Date.now() - startTime) / 1000;
-            const answer = document.getElementById('ans').value || "N/A";
+        document.getElementById('survey-form').onsubmit = async (e) => {
+            e.preventDefault();
             
-            await fetch(`${API}/submit`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ 
+            const allSubmissions = [];
+
+            // 1. Collect Demographics
+            const demos = [
+                { q: "Name", val: document.getElementById('demo-name').value },
+                { q: "Age", val: document.getElementById('demo-age').value },
+                { q: "Gender", val: document.getElementById('demo-gender').value },
+                { q: "Section", val: document.getElementById('demo-section').value }
+            ];
+
+            demos.forEach(d => {
+                allSubmissions.push({
                     respondent_id: respondentId,
-                    question: questions[index].text, 
-                    answer, 
-                    duration 
-                })
+                    question: d.q,
+                    answer: d.val || "N/A",
+                    duration: timers[d.q] ? (Date.now() - timers[d.q]) / 1000 : 0
+                });
             });
 
-            index++;
-            render();
-        }
+            // 2. Collect Dynamic Questions
+            dynamicData.filter(q => q.category !== 'demographic').forEach((q, i) => {
+                const val = document.getElementById(`q-${i}`).value;
+                allSubmissions.push({
+                    respondent_id: respondentId,
+                    question: q.text,
+                    answer: val || "N/A",
+                    duration: timers[`q-${i}`] ? (Date.now() - timers[`q-${i}`]) / 1000 : 0
+                });
+            });
 
-        function showSuccess() {
-            document.querySelector('.max-w-2xl').innerHTML = `
-                <div class="bg-white rounded-lg shadow-sm p-8 form-card text-center">
-                    <h1 class="text-2xl mb-4">Your response has been recorded.</h1>
-                    <a href="index.html" class="text-blue-600 underline text-sm">Submit another response</a>
-                </div>`;
-        }
+            // Send all to DB
+            for (const sub of allSubmissions) {
+                await fetch(`${API}/submit`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(sub)
+                });
+            }
 
-        start();
+            document.body.innerHTML = `<div class="flex items-center justify-center min-h-screen text-2xl font-bold">Thank you! Your response is saved.</div>`;
+        };
+
+        init();
     </script>
 </body>
 </html>

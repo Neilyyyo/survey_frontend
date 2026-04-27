@@ -1,25 +1,59 @@
 <!DOCTYPE html>
-<html>
-<head><title>Survey</title></head>
-<body>
-    <h2 id="qText">How do you like this survey?</h2>
-    <input type="text" id="ans"><button onclick="send()">Submit</button>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+    <title>Online Survey</title>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-6">
+    <div id="survey-card" class="bg-white p-10 rounded-3xl shadow-sm border border-gray-100 max-w-md w-full">
+        <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">Anonymous Survey</p>
+        <h1 id="question-text" class="text-2xl font-semibold text-gray-900 mb-6 italic">Loading question...</h1>
+        
+        <input type="text" id="answer-input" placeholder="Your answer..." 
+               class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black mb-4 transition-all">
+        
+        <button onclick="submitResponse()" id="submit-btn" 
+                class="w-full bg-black text-white p-4 rounded-2xl font-medium hover:bg-gray-800 transition">
+            Submit Answer
+        </button>
+    </div>
 
     <script>
-        let start = Date.now();
-        async function send() {
-            let timeTaken = (Date.now() - start) / 1000;
-            await fetch('https://survey-backend-0vo1.onrender.com/submit', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    question: document.getElementById('qText').innerText,
-                    answer: document.getElementById('ans').value,
-                    duration: timeTaken
-                })
-            });
-            alert("Sent in " + timeTaken + "s");
+        const API_URL = "https://your-backend-url.onrender.com/api"; 
+        let startTime;
+
+        async function loadQuestion() {
+            const res = await fetch(`${API_URL}/questions`);
+            const questions = await res.json();
+            if (questions.length > 0) {
+                document.getElementById('question-text').innerText = questions[0].text;
+                startTime = Date.now(); // Start timing
+            }
         }
+
+        async function submitResponse() {
+            const duration = (Date.now() - startTime) / 1000;
+            const answer = document.getElementById('answer-input').value;
+            const question = document.getElementById('question-text').innerText;
+
+            if(!answer) return alert("Please type something!");
+
+            await fetch(`${API_URL}/submit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question, answer, duration })
+            });
+
+            document.getElementById('survey-card').innerHTML = `
+                <h2 class="text-xl font-medium text-center">Thank you!</h2>
+                <p class="text-gray-500 text-center mt-2">Your response was recorded in ${duration}s.</p>
+            `;
+        }
+
+        loadQuestion();
     </script>
 </body>
 </html>
